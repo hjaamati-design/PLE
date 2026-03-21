@@ -29,7 +29,7 @@ export default function Home() {
 
   // Initialize audio object once
   useEffect(() => {
-    audioRef.current = new Audio("/introSong/Flux Zone - The Underground (Original Mix).mp3");
+    audioRef.current = new Audio("/introSong/intro.mp3");
     audioRef.current.volume = 0.5; // Set a reasonable default volume
   }, []);
 
