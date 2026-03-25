@@ -20,13 +20,14 @@ const GRID_EXPAND_DURATION = 2.0; // seconds for full reveal
 const GRID_MAX_FADE = 30;         // final fadeDistance
 
 function AnimatedGrid({ visible }: { visible: boolean }) {
-    const [fadeDistance, setFadeDistance] = useState(0);
+    const gridRef = useRef<any>(null);
+    const fadeRef = useRef(0);
     const startTime = useRef<number | null>(null);
 
     useFrame((state) => {
         if (!visible) {
             startTime.current = null;
-            setFadeDistance(0);
+            fadeRef.current = 0;
             return;
         }
 
@@ -38,11 +39,11 @@ function AnimatedGrid({ visible }: { visible: boolean }) {
         const progress = Math.min(1, elapsed / GRID_EXPAND_DURATION);
         // Ease-out quad for smooth deceleration
         const eased = 1 - Math.pow(1 - progress, 2);
-        const newFade = eased * GRID_MAX_FADE;
+        fadeRef.current = eased * GRID_MAX_FADE;
 
-        // Only trigger re-render if meaningfully changed
-        if (Math.abs(newFade - fadeDistance) > 0.1) {
-            setFadeDistance(newFade);
+        // Update grid material uniform directly — no React re-render
+        if (gridRef.current?.material?.uniforms?.fadeDistance) {
+            gridRef.current.material.uniforms.fadeDistance.value = fadeRef.current;
         }
     });
 
@@ -50,6 +51,7 @@ function AnimatedGrid({ visible }: { visible: boolean }) {
 
     return (
         <Grid
+            ref={gridRef}
             position={[0, -4, 0]}
             args={[40, 40]}
             cellSize={1}
@@ -58,7 +60,7 @@ function AnimatedGrid({ visible }: { visible: boolean }) {
             sectionSize={4}
             sectionThickness={1.5}
             sectionColor="#00FF00"
-            fadeDistance={fadeDistance}
+            fadeDistance={0}
             fadeStrength={1}
         />
     );
@@ -139,7 +141,7 @@ function RigWrapper({ animationPhase, setAnimationPhase }: SceneProps) {
 }
 
 export default function Scene({ animationPhase, setAnimationPhase }: SceneProps) {
-    const [cameraConfig, setCameraConfig] = useState({ position: [0, 1, 15] as [number, number, number], fov: 45 });
+    const [cameraConfig, setCameraConfig] = useState({ position: [0, 1, 15] as [number, number, number], fov: 45, isMobile: false });
 
     useEffect(() => {
         const handleResize = () => {
@@ -166,7 +168,7 @@ export default function Scene({ animationPhase, setAnimationPhase }: SceneProps)
                 fov = 45;
             }
 
-            setCameraConfig({ position: [0, y, z], fov });
+            setCameraConfig({ position: [0, y, z], fov, isMobile: aspect < 1 });
         };
         handleResize();
         window.addEventListener('resize', handleResize);
@@ -176,7 +178,7 @@ export default function Scene({ animationPhase, setAnimationPhase }: SceneProps)
     return (
         <div className="canvas-container">
             <Canvas
-                dpr={[1, 2]}
+                dpr={cameraConfig.isMobile ? 1 : [1, 2]}
                 gl={{ powerPreference: "high-performance" }}
                 camera={{
                     position: cameraConfig.position,
@@ -190,7 +192,7 @@ export default function Scene({ animationPhase, setAnimationPhase }: SceneProps)
                 <AnimatedGrid visible={animationPhase >= 6} />
 
                 {/* Atmospheric haze — concert stage ambiance */}
-                <StageHaze />
+                <StageHaze isMobile={cameraConfig.isMobile} />
 
                 {/* Interactive Camera Controls */}
                 <OrbitControls
@@ -207,10 +209,16 @@ export default function Scene({ animationPhase, setAnimationPhase }: SceneProps)
                 <RigWrapper animationPhase={animationPhase} setAnimationPhase={setAnimationPhase} />
 
                 {/* POST PROCESSING PIPELINE */}
-                <EffectComposer>
-                    <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} />
-                    <Vignette eskil={false} offset={0.1} darkness={1.1} />
-                </EffectComposer>
+                {cameraConfig.isMobile ? (
+                    <EffectComposer>
+                        <Vignette eskil={false} offset={0.1} darkness={1.1} />
+                    </EffectComposer>
+                ) : (
+                    <EffectComposer>
+                        <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} />
+                        <Vignette eskil={false} offset={0.1} darkness={1.1} />
+                    </EffectComposer>
+                )}
             </Canvas>
         </div>
     );

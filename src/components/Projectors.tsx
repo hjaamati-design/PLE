@@ -82,7 +82,7 @@ export const MOBILE_PROJECTOR_CONFIGS: any[] = [
         // Projector 3
         animation: "Static", color: "#c2ff00", volume: 1300, angle: 0.19, distance: 84, penumbra: 0.3,
         radiusTop: 0.060000000000000005, rayOpacity: 1, attenuation: 1.4, anglePower: 5,
-        x: -0.06, y: -1.21, z: 10,
+        x: -0.06, y: -1.1, z: 10,
         targetX: -11.92184965569546, targetY: -33.37010290732649, targetZ: 12.391328742606134
     },
     {
@@ -179,7 +179,8 @@ function VolumetricBeamConfigured({ config, animationPhase, ...props }: any) {
         return obj;
     }, [config]);
 
-    const [animMultiplier, setAnimMultiplier] = useState(1);
+    const animMultiplierRef = useRef(1);
+    const spotRef = useRef<any>(null!);
 
     useFrame((state) => {
         const time = state.clock.elapsedTime;
@@ -197,11 +198,17 @@ function VolumetricBeamConfigured({ config, animationPhase, ...props }: any) {
         targetObj.position.set(config.targetX + offsetX, config.targetY + offsetY, config.targetZ + offsetZ);
 
         if (currentAnim === "Pulse") {
-            setAnimMultiplier(0.1 + 0.9 * Math.abs(Math.sin(time * 3)));
+            animMultiplierRef.current = 0.1 + 0.9 * Math.abs(Math.sin(time * 3));
         } else if (currentAnim === "Strobe") {
-            setAnimMultiplier(Math.sin(time * 20) > 0 ? 1 : 0);
-        } else if (animMultiplier !== 1) {
-            setAnimMultiplier(1);
+            animMultiplierRef.current = Math.sin(time * 20) > 0 ? 1 : 0;
+        } else {
+            animMultiplierRef.current = 1;
+        }
+
+        // Update SpotLight imperatively — no React re-render needed
+        if (spotRef.current) {
+            spotRef.current.intensity = config.volume * animMultiplierRef.current;
+            spotRef.current.opacity = config.rayOpacity * animMultiplierRef.current;
         }
     });
 
@@ -210,17 +217,18 @@ function VolumetricBeamConfigured({ config, animationPhase, ...props }: any) {
             <primitive object={targetObj} />
             <primitive object={originObj} />
             <SpotLight
+                ref={spotRef}
                 position={[config.x, config.y, config.z]}
                 target={targetObj}
                 color={config.color}
-                intensity={config.volume * animMultiplier}
+                intensity={config.volume}
                 angle={config.angle}
                 penumbra={config.penumbra}
                 distance={config.distance}
                 radiusTop={config.radiusTop}
                 attenuation={config.attenuation}
                 anglePower={config.anglePower}
-                opacity={config.rayOpacity * animMultiplier}
+                opacity={config.rayOpacity}
                 castShadow={false}
                 {...props}
             />
@@ -246,13 +254,13 @@ export default function Projectors({ animationPhase, setAnimationPhase, isMobile
     const configs = isMobile ? MOBILE_PROJECTOR_CONFIGS : DESKTOP_PROJECTOR_CONFIGS;
     // Track which individual projectors have been activated (mounted)
     const [activatedProjectors, setActivatedProjectors] = useState<Set<number>>(new Set());
+    const activatedRef = useRef<Set<number>>(new Set());
     const groupStartTimes = useRef<Map<number, number>>(new Map());
     const advancedPhases = useRef<Set<number>>(new Set());
 
     // Activate projectors one at a time based on stagger timing
     useFrame((state) => {
         let needsUpdate = false;
-        const newActivated = new Set(activatedProjectors);
         const activeGroups = isMobile ? MOBILE_PROJECTOR_GROUPS : DESKTOP_PROJECTOR_GROUPS;
 
         for (const group of activeGroups) {
@@ -268,16 +276,15 @@ export default function Projectors({ animationPhase, setAnimationPhase, isMobile
 
             group.indices.forEach((projIdx, order) => {
                 const activationTime = order * PROJECTOR_STAGGER;
-                if (elapsed >= activationTime && !newActivated.has(projIdx)) {
-                    newActivated.add(projIdx);
+                if (elapsed >= activationTime && !activatedRef.current.has(projIdx)) {
+                    activatedRef.current.add(projIdx);
                     needsUpdate = true;
                 }
             });
 
             // Advance to next phase when ALL projectors in the group are mounted
-            // (last one mounts at STAGGER, so total wait = STAGGER + small buffer)
             if (!advancedPhases.current.has(group.phase)) {
-                const allMounted = group.indices.every(idx => newActivated.has(idx));
+                const allMounted = group.indices.every(idx => activatedRef.current.has(idx));
                 const lastOrder = group.indices.length - 1;
                 const totalGroupTime = lastOrder * PROJECTOR_STAGGER + PROJECTOR_FADE_DURATION;
                 if (allMounted && elapsed >= totalGroupTime) {
@@ -287,8 +294,9 @@ export default function Projectors({ animationPhase, setAnimationPhase, isMobile
             }
         }
 
+        // Only trigger React re-render when a new projector actually needs mounting
         if (needsUpdate) {
-            setActivatedProjectors(newActivated);
+            setActivatedProjectors(new Set(activatedRef.current));
         }
     });
 

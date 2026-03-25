@@ -129,7 +129,7 @@ function HazeLayer({
 //  Stage Haze — Layered volumetric fog for concert ambiance
 //  Add to Scene.tsx: <StageHaze />
 // ══════════════════════════════════════════════════════════════
-export default function StageHaze() {
+export default function StageHaze({ isMobile = false }: { isMobile?: boolean }) {
     return (
         <group>
             {/* Back layer — wide, slow drift */}
@@ -139,16 +139,6 @@ export default function StageHaze() {
                 speed={HAZE_SPEED * 0.6}
                 opacity={HAZE_OPACITY}
                 color={HAZE_COLOR}
-            />
-
-            {/* Mid layer — medium, slightly faster */}
-            <HazeLayer
-                position={[-2, -1, -10]}
-                scale={[35, 18]}
-                speed={HAZE_SPEED}
-                opacity={HAZE_OPACITY * 0.7}
-                color="#0a3a0a"
-                rotation={[0, 0.2, 0]}
             />
 
             {/* Low ground haze — hugs the floor, behind model */}
@@ -161,25 +151,40 @@ export default function StageHaze() {
                 rotation={[-Math.PI / 2, 0, 0]}
             />
 
-            {/* Front subtle layer — very thin, just for depth */}
-            <HazeLayer
-                position={[3, 1, 10]}
-                scale={[25, 12]}
-                speed={HAZE_SPEED * 1.4}
-                opacity={HAZE_OPACITY * 0.25}
-                color="#1a4a1a"
-                rotation={[0, -0.15, 0]}
-            />
+            {/* Desktop-only layers — skip on mobile for performance */}
+            {!isMobile && (
+                <>
+                    {/* Mid layer — medium, slightly faster */}
+                    <HazeLayer
+                        position={[-2, -1, -10]}
+                        scale={[35, 18]}
+                        speed={HAZE_SPEED}
+                        opacity={HAZE_OPACITY * 0.7}
+                        color="#0a3a0a"
+                        rotation={[0, 0.2, 0]}
+                    />
 
-            {/* Upper atmosphere — very subtle, high up behind */}
-            <HazeLayer
-                position={[0, 6, -8]}
-                scale={[30, 15]}
-                speed={HAZE_SPEED * 0.3}
-                opacity={HAZE_OPACITY * 0.5}
-                color="#0a2a0a"
-                rotation={[-0.3, 0, 0]}
-            />
+                    {/* Front subtle layer — very thin, just for depth */}
+                    <HazeLayer
+                        position={[3, 1, 10]}
+                        scale={[25, 12]}
+                        speed={HAZE_SPEED * 1.4}
+                        opacity={HAZE_OPACITY * 0.25}
+                        color="#1a4a1a"
+                        rotation={[0, -0.15, 0]}
+                    />
+
+                    {/* Upper atmosphere — very subtle, high up behind */}
+                    <HazeLayer
+                        position={[0, 6, -8]}
+                        scale={[30, 15]}
+                        speed={HAZE_SPEED * 0.3}
+                        opacity={HAZE_OPACITY * 0.5}
+                        color="#0a2a0a"
+                        rotation={[-0.3, 0, 0]}
+                    />
+                </>
+            )}
         </group>
     );
 }
