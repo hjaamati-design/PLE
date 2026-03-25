@@ -2,49 +2,44 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useProgress } from "@react-three/drei";
-import { resolveVideoUrl } from "@/utils/videoUtils";
 
-// Weight distribution for progress calculation
-const WEIGHT_GLB = 40;
-const WEIGHT_VIDEO = 35;
-const WEIGHT_AUDIO = 15;
-const WEIGHT_FONT = 10;
-
-// Safety timeout for video loading (mobile Safari may not fire canplaythrough)
-const VIDEO_TIMEOUT_MS = 10000;
+// Weight distribution (no video — video loads via useVideoTexture inside Canvas)
+const WEIGHT_GLB = 55;
+const WEIGHT_AUDIO = 30;
+const WEIGHT_FONT = 15;
 
 export function useAssetReadiness() {
-    const { progress: glbProgress } = useProgress();
-    const [videoReady, setVideoReady] = useState(false);
+    const { progress: glbProgress, active: glbActive } = useProgress();
+    const [glbReady, setGlbReady] = useState(false);
     const [audioReady, setAudioReady] = useState(false);
     const [fontReady, setFontReady] = useState(false);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const glbWasActive = useRef(false);
 
-    // Preload screen video
+    // Track whether GLB loading was ever active
     useEffect(() => {
-        const url = resolveVideoUrl("/ScreenDisplay/front.webm");
-        const video = document.createElement("video");
-        video.preload = "auto";
-        video.muted = true;
-        video.playsInline = true;
-        video.src = url;
-        videoRef.current = video;
+        if (glbActive) glbWasActive.current = true;
+    }, [glbActive]);
 
-        const onReady = () => setVideoReady(true);
-        video.addEventListener("canplaythrough", onReady);
+    // Detect GLB readiness (handles both fresh and cached loads)
+    useEffect(() => {
+        if (glbReady) return;
 
-        // Safety timeout — proceed even if canplaythrough never fires
-        const timeout = setTimeout(() => setVideoReady(true), VIDEO_TIMEOUT_MS);
+        // Normal completion: progress hit 100%
+        if (glbProgress >= 100) {
+            setGlbReady(true);
+            return;
+        }
 
-        video.load();
+        // Cached/instant load: active never became true, progress stayed at 0
+        // Wait 200ms to give useProgress a chance to fire, then assume cached
+        const timer = setTimeout(() => {
+            if (!glbWasActive.current && glbProgress === 0) {
+                setGlbReady(true);
+            }
+        }, 200);
 
-        return () => {
-            video.removeEventListener("canplaythrough", onReady);
-            clearTimeout(timeout);
-            video.src = "";
-            videoRef.current = null;
-        };
-    }, []);
+        return () => clearTimeout(timer);
+    }, [glbProgress, glbReady]);
 
     // Preload audio
     useEffect(() => {
@@ -63,8 +58,7 @@ export function useAssetReadiness() {
 
     // Weighted progress
     const progress =
-        (glbProgress / 100) * WEIGHT_GLB +
-        (videoReady ? WEIGHT_VIDEO : 0) +
+        (glbReady ? WEIGHT_GLB : (glbProgress / 100) * WEIGHT_GLB) +
         (audioReady ? WEIGHT_AUDIO : 0) +
         (fontReady ? WEIGHT_FONT : 0);
 

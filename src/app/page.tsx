@@ -31,18 +31,16 @@ export default function Home() {
   const { progress, allReady } = useAssetReadiness();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize audio object once
-  useEffect(() => {
-    audioRef.current = new Audio("/introSong/intro.mp3");
-    audioRef.current.volume = 0.5;
-  }, []);
-
-  // Called from the Loader's "Enter" button — runs inside a user gesture
+  // Called from the Loader's "Enter" button — runs inside a user gesture.
+  // iOS Safari requires the Audio to be CREATED + played in the same gesture.
   const handleEnterExperience = () => {
-    // Start audio immediately within the click context (bypasses autoplay block)
-    if (audioRef.current) {
-      audioRef.current.play().catch(() => {});
-    }
+    // Create fresh audio element inside the click handler (iOS requirement)
+    const audio = new Audio("/introSong/intro.mp3");
+    audio.volume = 0.5;
+    audio.setAttribute("playsinline", "");
+    audio.play().catch(() => {});
+    audioRef.current = audio;
+
     setAnimationPhase(0);
   };
 

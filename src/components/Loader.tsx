@@ -29,6 +29,12 @@ export default function Loader({ progress, allReady, onEnter, onFadeComplete }: 
         }
     }, [allReady]);
 
+    // Fallback: if allReady never becomes true, show enter after 12s anyway
+    useEffect(() => {
+        const fallback = setTimeout(() => setShowEnter(true), 12000);
+        return () => clearTimeout(fallback);
+    }, []);
+
     const handleEnter = () => {
         onEnter();
         setFadeOut(true);
