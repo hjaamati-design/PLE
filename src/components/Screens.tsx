@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import { useTexture, useVideoTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
+
+import { resolveVideoUrl } from "@/utils/videoUtils";
 
 // ── Timing ──
 export const SCREEN_INITIAL_DELAY = 0.8;
@@ -90,11 +92,12 @@ function RegularScreen({
     revealStarted: boolean;
     onRevealed?: () => void;
 }) {
+    const resolvedUrl = config.textureUrl ? resolveVideoUrl(config.textureUrl) : config.textureUrl;
     const hasNotified = useRef(false);
-    const isVideo = config.textureUrl && (config.textureUrl.endsWith(".mp4") || config.textureUrl.endsWith(".webm"));
+    const isVideo = resolvedUrl && (resolvedUrl.endsWith(".mp4") || resolvedUrl.endsWith(".webm"));
 
-    const staticTexture = config.textureUrl && !isVideo ? (useTexture(config.textureUrl as string) as THREE.Texture) : null;
-    const videoTexture = config.textureUrl && isVideo ? (useVideoTexture(config.textureUrl as string, {
+    const staticTexture = resolvedUrl && !isVideo ? (useTexture(resolvedUrl as string) as THREE.Texture) : null;
+    const videoTexture = resolvedUrl && isVideo ? (useVideoTexture(resolvedUrl as string, {
         unsuspend: 'canplay',
         muted: true,
         loop: true,
@@ -164,7 +167,8 @@ function RegularScreen({
 //  Only mounted when showLogo=true (replaces RegularScreen)
 // ══════════════════════════════════════════════════════════════
 function LogoScreen({ config }: { config: any }) {
-    const logoTexture = useVideoTexture("/ScreenDisplay/animatedLogo.webm", {
+    const logoUrl = resolveVideoUrl("/ScreenDisplay/animatedLogo.webm");
+    const logoTexture = useVideoTexture(logoUrl, {
         loop: false,
         muted: true,
         playsInline: true,

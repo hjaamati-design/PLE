@@ -623,3 +623,199 @@ div[class*="leva-c-kCxaqx"],
     max-height: 180px !important;
   }
 }
+
+/* ── Loading Screen ── */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #020404;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1s ease-out;
+  overflow: hidden;
+}
+
+/* ── Stage Spotlights ── */
+.loader-spot {
+  position: absolute;
+  width: 300px;
+  height: 110vh;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.loader-spot-left {
+  top: -10%;
+  left: 10%;
+  background: linear-gradient(
+    195deg,
+    rgba(0, 255, 0, 0.10) 0%,
+    rgba(0, 255, 0, 0.03) 30%,
+    transparent 60%
+  );
+  transform: rotate(-4deg);
+  animation: spotDrift 6s ease-in-out infinite alternate;
+}
+
+.loader-spot-right {
+  top: -10%;
+  right: 10%;
+  background: linear-gradient(
+    165deg,
+    rgba(194, 255, 0, 0.08) 0%,
+    rgba(194, 255, 0, 0.02) 30%,
+    transparent 60%
+  );
+  transform: rotate(4deg);
+  animation: spotDrift 6s ease-in-out 1s infinite alternate-reverse;
+}
+
+/* ── Stage Haze / Fog ── */
+.loader-haze {
+  position: absolute;
+  bottom: 0;
+  left: -10%;
+  right: -10%;
+  pointer-events: none;
+}
+
+.loader-haze-1 {
+  height: 35%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 255, 0, 0.04) 0%,
+    rgba(0, 255, 0, 0.015) 40%,
+    transparent 100%
+  );
+  animation: hazeDrift 8s ease-in-out infinite alternate;
+}
+
+.loader-haze-2 {
+  height: 25%;
+  background: linear-gradient(
+    to top,
+    rgba(194, 255, 0, 0.03) 0%,
+    transparent 100%
+  );
+  animation: hazeDrift 10s ease-in-out 2s infinite alternate-reverse;
+}
+
+/* ── Center Content ── */
+.loader-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loader-center.entered {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Logo with Stage Flare ── */
+.loader-logo-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-logo-flare {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 255, 0, 0.10) 0%,
+    rgba(0, 255, 0, 0.04) 40%,
+    transparent 70%
+  );
+  animation: flarePulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Tagline ── */
+.loader-tagline {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  color: rgba(250, 250, 249, 0.35);
+  text-transform: uppercase;
+}
+
+/* ── Progress Section ── */
+.loader-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(280px, 65vw);
+}
+
+.loader-bar-track {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loader-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0, 255, 0, 0.3), var(--accent));
+  border-radius: 1px;
+  transition: width 0.4s ease-out;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+.loader-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.loader-status {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.loader-percent {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+/* ── Loader Animations ── */
+@keyframes spotDrift {
+  0%   { transform: rotate(-4deg) translateX(0); opacity: 0.3; }
+  100% { transform: rotate(-2deg) translateX(20px); opacity: 0.6; }
+}
+
+@keyframes hazeDrift {
+  0%   { transform: translateX(-3%); opacity: 0.7; }
+  100% { transform: translateX(3%); opacity: 1; }
+}
+
+@keyframes flarePulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}

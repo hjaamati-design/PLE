@@ -9,6 +9,8 @@ import Footer from "@/components/Footer";
 import FloatingCards from "@/components/FloatingCards";
 import FloatingCardsLeft from "@/components/FloatingCardsLeft";
 import MobileServicesStrip from "@/components/MobileServicesStrip";
+import Loader from "@/components/Loader";
+import { useAssetReadiness } from "@/hooks/useAssetReadiness";
 import { Leva } from "leva";
 
 /**
@@ -24,7 +26,9 @@ import { Leva } from "leva";
  *  8 = Floor done → hero text + subscribe form + footer appear
  */
 export default function Home() {
-  const [animationPhase, setAnimationPhase] = useState(0);
+  const [animationPhase, setAnimationPhase] = useState(-1);
+  const [loaderDone, setLoaderDone] = useState(false);
+  const { progress, allReady } = useAssetReadiness();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize audio object once
@@ -62,17 +66,17 @@ export default function Home() {
 
   return (
     <main className="container">
-      {/* Leva Panel — constrained via global CSS in globals.css */}
-      {/* <Leva
-        collapsed
-        oneLineLabels
-        flat
-        theme={{
-          sizes: { rootWidth: '220px', folderTitleHeight: '24px', rowHeight: '20px' },
-          space: { rowGap: '2px', md: '4px', sm: '2px' },
-          fontSizes: { root: '10px' }
-        }}
-      /> */}
+      {/* Loading Screen */}
+      {!loaderDone && (
+        <Loader
+          progress={progress}
+          allReady={allReady}
+          onFadeComplete={() => {
+            setLoaderDone(true);
+            setAnimationPhase(0);
+          }}
+        />
+      )}
 
       {/* 3D Background */}
       <Scene animationPhase={animationPhase} setAnimationPhase={setAnimationPhase} />

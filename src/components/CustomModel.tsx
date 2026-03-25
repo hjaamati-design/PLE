@@ -27,6 +27,7 @@ export default function CustomModel({ animationPhase, setAnimationPhase }: Custo
     const animDone = useRef(false);
 
     useFrame((_, delta) => {
+        if (animationPhase < 0) return;
         if (animDone.current || !groupRef.current) return;
 
         const currentY = groupRef.current.position.y;

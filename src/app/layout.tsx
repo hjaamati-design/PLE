@@ -17,6 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="dark" suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/3DAsset/Meshy_AI_Neon_Screen_Cube_compressed.glb" as="fetch" crossOrigin="anonymous" />
+        <link rel="preload" href="/ScreenDisplay/front.webm" as="video" />
+      </head>
       <body>
         {children}
       </body>

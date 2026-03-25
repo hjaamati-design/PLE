@@ -50,3 +50,13 @@ public/3DAsset/Meshy_AI_Neon_Screen_Cube_0*.glb
 .agent/
 design-system/
 .gemini/
+.claude/skills/threejs-animation.md
+.claude/skills/threejs-fundamentals.md
+.claude/skills/threejs-geometry.md
+.claude/skills/threejs-interaction.md
+.claude/skills/threejs-lighting.md
+.claude/skills/threejs-loaders.md
+.claude/skills/threejs-materials.md
+.claude/skills/threejs-postprocessing.md
+.claude/skills/threejs-shaders.md
+.claude/skills/threejs-textures.md
