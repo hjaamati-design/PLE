@@ -6,30 +6,38 @@ import Image from "next/image";
 interface LoaderProps {
     progress: number;
     allReady: boolean;
-    onFadeComplete: () => void;
+    onEnter: () => void;
+    onFadeComplete?: () => void;
 }
 
-export default function Loader({ progress, allReady, onFadeComplete }: LoaderProps) {
+export default function Loader({ progress, allReady, onEnter, onFadeComplete }: LoaderProps) {
     const [fadeOut, setFadeOut] = useState(false);
     const [visible, setVisible] = useState(true);
     const [mounted, setMounted] = useState(false);
+    const [showEnter, setShowEnter] = useState(false);
 
     useEffect(() => {
         const t = setTimeout(() => setMounted(true), 50);
         return () => clearTimeout(t);
     }, []);
 
+    // When ready, reveal the enter button
     useEffect(() => {
         if (allReady) {
-            const timer = setTimeout(() => setFadeOut(true), 600);
+            const timer = setTimeout(() => setShowEnter(true), 300);
             return () => clearTimeout(timer);
         }
     }, [allReady]);
 
+    const handleEnter = () => {
+        onEnter();
+        setFadeOut(true);
+    };
+
     const handleTransitionEnd = (e: React.TransitionEvent) => {
         if (fadeOut && e.target === e.currentTarget) {
             setVisible(false);
-            onFadeComplete();
+            onFadeComplete?.();
         }
     };
 
@@ -69,17 +77,23 @@ export default function Loader({ progress, allReady, onFadeComplete }: LoaderPro
                 {/* Tagline */}
                 <p className="loader-tagline">L&apos;EXCELLENCE &Eacute;V&Eacute;NEMENTIELLE</p>
 
-                {/* Progress section */}
+                {/* Progress or Enter button */}
                 <div className="loader-progress-section">
-                    <div className="loader-bar-track">
-                        <div className="loader-bar-fill" style={{ width: `${rounded}%` }} />
-                    </div>
-                    <div className="loader-meta">
-                        <span className="loader-status">
-                            {rounded < 100 ? "PREPARING THE STAGE" : "SHOWTIME"}
-                        </span>
-                        <span className="loader-percent">{rounded}%</span>
-                    </div>
+                    {!showEnter ? (
+                        <>
+                            <div className="loader-bar-track">
+                                <div className="loader-bar-fill" style={{ width: `${rounded}%` }} />
+                            </div>
+                            <div className="loader-meta">
+                                <span className="loader-status">PREPARING THE STAGE</span>
+                                <span className="loader-percent">{rounded}%</span>
+                            </div>
+                        </>
+                    ) : (
+                        <button className="loader-enter-btn" onClick={handleEnter}>
+                            ENTER EXPERIENCE
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

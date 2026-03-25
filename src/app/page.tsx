@@ -34,25 +34,17 @@ export default function Home() {
   // Initialize audio object once
   useEffect(() => {
     audioRef.current = new Audio("/introSong/intro.mp3");
-    audioRef.current.volume = 0.5; // Set a reasonable default volume
+    audioRef.current.volume = 0.5;
   }, []);
 
-  // Trigger audio when first screens load (Phase 1)
-  useEffect(() => {
-    if (animationPhase === 1 && audioRef.current) {
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          console.warn("Browser blocked autoplay. Audio will start on first click.");
-          const playOnInteract = () => {
-            audioRef.current?.play();
-            document.removeEventListener("click", playOnInteract);
-          };
-          document.addEventListener("click", playOnInteract);
-        });
-      }
+  // Called from the Loader's "Enter" button — runs inside a user gesture
+  const handleEnterExperience = () => {
+    // Start audio immediately within the click context (bypasses autoplay block)
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {});
     }
-  }, [animationPhase]);
+    setAnimationPhase(0);
+  };
 
   // Phase 7 → 8: after floor materializes, wait then show text
   useEffect(() => {
@@ -71,10 +63,8 @@ export default function Home() {
         <Loader
           progress={progress}
           allReady={allReady}
-          onFadeComplete={() => {
-            setLoaderDone(true);
-            setAnimationPhase(0);
-          }}
+          onEnter={handleEnterExperience}
+          onFadeComplete={() => setLoaderDone(true)}
         />
       )}
 
