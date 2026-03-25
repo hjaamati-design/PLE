@@ -11,7 +11,7 @@ import { useFrame } from "@react-three/fiber";
 // ══════════════════════════════════════════════════════════════
 
 // ── Timing ──
-export const MODEL_DROP_SPEED = 10.0;  // Higher = faster drop
+export const MODEL_DROP_SPEED = 16.0;  // Higher = faster drop
 export const MODEL_START_Y = 7;       // How high above it starts
 export const MODEL_TARGET_Y = 2.03;   // Final resting position
 
