@@ -49,7 +49,7 @@ export default function Home() {
     if (animationPhase === 7) {
       const timer = setTimeout(() => {
         setAnimationPhase(p => Math.max(p, 8));
-      }, 1500); // 1.5s for floor to materialize before text appears
+      }, 1000); // 1s for floor to materialize before text appears
       return () => clearTimeout(timer);
     }
   }, [animationPhase]);

@@ -8,9 +8,9 @@ import { useFrame } from "@react-three/fiber";
 import { resolveVideoUrl } from "@/utils/videoUtils";
 
 // ── Timing ──
-export const SCREEN_INITIAL_DELAY = 0.8;
+export const SCREEN_INITIAL_DELAY = 0.4;
 export const SCREEN_ANIM_DURATION = 0.4;
-export const SCREEN_INTERVAL = 0.5;
+export const SCREEN_INTERVAL = 0.25;
 
 // ── Desktop Screen Configs ──
 export const DESKTOP_SCREEN_CONFIGS = [

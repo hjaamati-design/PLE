@@ -115,9 +115,9 @@ export const PROJECTOR_CONFIGS = DESKTOP_PROJECTOR_CONFIGS;
 // ══════════════════════════════════════════════════════════════
 //  TIMING — Adjust these to control the projector sequence
 // ══════════════════════════════════════════════════════════════
-export const PROJECTOR_STAGGER = 0.5;       // dramatic pause between projectors in same group
+export const PROJECTOR_STAGGER = 0.3;       // dramatic pause between projectors in same group
 export const PROJECTOR_FADE_DURATION = 0.6; // seconds for each projector to fade in
-export const PROJECTOR_READING_DELAY = 2.0; // seconds to let users read cards before next group
+export const PROJECTOR_READING_DELAY = 1.0; // seconds to let users read cards before next group
 
 // ══════════════════════════════════════════════════════════════
 //  PHASE GROUPS — Which projectors activate at which phase
