@@ -98,7 +98,7 @@ function RegularScreen({
 
     const staticTexture = resolvedUrl && !isVideo ? (useTexture(resolvedUrl as string) as THREE.Texture) : null;
     const videoTexture = resolvedUrl && isVideo ? (useVideoTexture(resolvedUrl as string, {
-        unsuspend: 'canplay',
+        unsuspend: 'loadedmetadata',
         muted: true,
         loop: true,
         playsInline: true,
@@ -172,7 +172,7 @@ function LogoScreen({ config }: { config: any }) {
         loop: false,
         muted: true,
         playsInline: true,
-        unsuspend: 'canplay'
+        unsuspend: 'loadedmetadata'
     }) as THREE.Texture;
     logoTexture.wrapS = THREE.RepeatWrapping;
     logoTexture.repeat.x = -1;
