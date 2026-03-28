@@ -10,7 +10,9 @@ import FloatingCards from "@/components/FloatingCards";
 import FloatingCardsLeft from "@/components/FloatingCardsLeft";
 import MobileServicesStrip from "@/components/MobileServicesStrip";
 import Loader from "@/components/Loader";
+import AudioControl from "@/components/AudioControl";
 import { useAssetReadiness } from "@/hooks/useAssetReadiness";
+import { isWebGLAvailable } from "@/utils/webglDetect";
 import { Leva } from "leva";
 
 /**
@@ -28,8 +30,15 @@ import { Leva } from "leva";
 export default function Home() {
   const [animationPhase, setAnimationPhase] = useState(-1);
   const [loaderDone, setLoaderDone] = useState(false);
+  const [hasWebGL, setHasWebGL] = useState(true);
   const { progress, allReady } = useAssetReadiness();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!isWebGLAvailable()) {
+      setHasWebGL(false);
+    }
+  }, []);
 
   // Called from the Loader's "Enter" button — runs inside a user gesture.
   // iOS Safari requires the Audio to be CREATED + played in the same gesture.
@@ -41,7 +50,8 @@ export default function Home() {
     audio.play().catch(() => {});
     audioRef.current = audio;
 
-    setAnimationPhase(0);
+    // Skip animation sequence when WebGL is unavailable — show all UI immediately
+    setAnimationPhase(hasWebGL ? 0 : 8);
   };
 
   // Phase 7 → 8: after floor materializes, wait then show text
@@ -59,15 +69,19 @@ export default function Home() {
       {/* Loading Screen */}
       {!loaderDone && (
         <Loader
-          progress={progress}
-          allReady={allReady}
+          progress={hasWebGL ? progress : 100}
+          allReady={hasWebGL ? allReady : true}
           onEnter={handleEnterExperience}
           onFadeComplete={() => setLoaderDone(true)}
         />
       )}
 
-      {/* 3D Background */}
-      <Scene animationPhase={animationPhase} setAnimationPhase={setAnimationPhase} />
+      {/* 3D Background (or static fallback when WebGL is unavailable) */}
+      {hasWebGL ? (
+        <Scene animationPhase={animationPhase} setAnimationPhase={setAnimationPhase} />
+      ) : (
+        <div className="fallback-bg" />
+      )}
 
       {/* UI Overlay */}
       <div className="content-overlay">
@@ -75,6 +89,7 @@ export default function Home() {
         <FloatingCards visible={animationPhase >= 3} />
 
         <Header />
+        <AudioControl audioRef={audioRef} visible={animationPhase >= 0} />
 
         <div className="main">
           <HeroContent visible={animationPhase >= 8} />
